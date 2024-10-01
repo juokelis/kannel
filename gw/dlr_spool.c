@@ -64,6 +64,8 @@
  * Stipe Tolj <stolj at kannel dot org>
  */
 
+#define _GNU_SOURCE
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>

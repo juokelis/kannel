@@ -1,0 +1,8 @@
+#! /bin/sh
+#
+# Created by configure
+
+'./configure' \
+'--with-ssl=/usr' \
+'--with-mysql' \
+"$@"

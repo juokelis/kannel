@@ -1,14 +1,14 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+/* A Bison parser, made by GNU Bison 3.7.4.  */
 
-/* Skeleton interface for Bison's Yacc-like parsers in C
+/* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,9 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -33,98 +31,120 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* Tokens.  */
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
+
+#ifndef YY_WS_YY_Y_TAB_H_INCLUDED
+# define YY_WS_YY_Y_TAB_H_INCLUDED
+/* Debug traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+#if YYDEBUG
+extern int ws_yy_debug;
+#endif
+
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
-      know about them.  */
-   enum yytokentype {
-     tINVALID = 258,
-     tTRUE = 259,
-     tFALSE = 260,
-     tINTEGER = 261,
-     tFLOAT = 262,
-     tSTRING = 263,
-     tIDENTIFIER = 264,
-     tACCESS = 265,
-     tAGENT = 266,
-     tBREAK = 267,
-     tCONTINUE = 268,
-     tIDIV = 269,
-     tIDIVA = 270,
-     tDOMAIN = 271,
-     tELSE = 272,
-     tEQUIV = 273,
-     tEXTERN = 274,
-     tFOR = 275,
-     tFUNCTION = 276,
-     tHEADER = 277,
-     tHTTP = 278,
-     tIF = 279,
-     tISVALID = 280,
-     tMETA = 281,
-     tNAME = 282,
-     tPATH = 283,
-     tRETURN = 284,
-     tTYPEOF = 285,
-     tUSE = 286,
-     tUSER = 287,
-     tVAR = 288,
-     tWHILE = 289,
-     tURL = 290,
-     tDELETE = 291,
-     tIN = 292,
-     tLIB = 293,
-     tNEW = 294,
-     tNULL = 295,
-     tTHIS = 296,
-     tVOID = 297,
-     tWITH = 298,
-     tCASE = 299,
-     tCATCH = 300,
-     tCLASS = 301,
-     tCONST = 302,
-     tDEBUGGER = 303,
-     tDEFAULT = 304,
-     tDO = 305,
-     tENUM = 306,
-     tEXPORT = 307,
-     tEXTENDS = 308,
-     tFINALLY = 309,
-     tIMPORT = 310,
-     tPRIVATE = 311,
-     tPUBLIC = 312,
-     tSIZEOF = 313,
-     tSTRUCT = 314,
-     tSUPER = 315,
-     tSWITCH = 316,
-     tTHROW = 317,
-     tTRY = 318,
-     tEQ = 319,
-     tLE = 320,
-     tGE = 321,
-     tNE = 322,
-     tAND = 323,
-     tOR = 324,
-     tPLUSPLUS = 325,
-     tMINUSMINUS = 326,
-     tLSHIFT = 327,
-     tRSSHIFT = 328,
-     tRSZSHIFT = 329,
-     tADDA = 330,
-     tSUBA = 331,
-     tMULA = 332,
-     tDIVA = 333,
-     tANDA = 334,
-     tORA = 335,
-     tXORA = 336,
-     tREMA = 337,
-     tLSHIFTA = 338,
-     tRSSHIFTA = 339,
-     tRSZSHIFTA = 340
-   };
+  enum yytokentype
+  {
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    tINVALID = 258,                /* tINVALID  */
+    tTRUE = 259,                   /* tTRUE  */
+    tFALSE = 260,                  /* tFALSE  */
+    tINTEGER = 261,                /* tINTEGER  */
+    tFLOAT = 262,                  /* tFLOAT  */
+    tSTRING = 263,                 /* tSTRING  */
+    tIDENTIFIER = 264,             /* tIDENTIFIER  */
+    tACCESS = 265,                 /* tACCESS  */
+    tAGENT = 266,                  /* tAGENT  */
+    tBREAK = 267,                  /* tBREAK  */
+    tCONTINUE = 268,               /* tCONTINUE  */
+    tIDIV = 269,                   /* tIDIV  */
+    tIDIVA = 270,                  /* tIDIVA  */
+    tDOMAIN = 271,                 /* tDOMAIN  */
+    tELSE = 272,                   /* tELSE  */
+    tEQUIV = 273,                  /* tEQUIV  */
+    tEXTERN = 274,                 /* tEXTERN  */
+    tFOR = 275,                    /* tFOR  */
+    tFUNCTION = 276,               /* tFUNCTION  */
+    tHEADER = 277,                 /* tHEADER  */
+    tHTTP = 278,                   /* tHTTP  */
+    tIF = 279,                     /* tIF  */
+    tISVALID = 280,                /* tISVALID  */
+    tMETA = 281,                   /* tMETA  */
+    tNAME = 282,                   /* tNAME  */
+    tPATH = 283,                   /* tPATH  */
+    tRETURN = 284,                 /* tRETURN  */
+    tTYPEOF = 285,                 /* tTYPEOF  */
+    tUSE = 286,                    /* tUSE  */
+    tUSER = 287,                   /* tUSER  */
+    tVAR = 288,                    /* tVAR  */
+    tWHILE = 289,                  /* tWHILE  */
+    tURL = 290,                    /* tURL  */
+    tDELETE = 291,                 /* tDELETE  */
+    tIN = 292,                     /* tIN  */
+    tLIB = 293,                    /* tLIB  */
+    tNEW = 294,                    /* tNEW  */
+    tNULL = 295,                   /* tNULL  */
+    tTHIS = 296,                   /* tTHIS  */
+    tVOID = 297,                   /* tVOID  */
+    tWITH = 298,                   /* tWITH  */
+    tCASE = 299,                   /* tCASE  */
+    tCATCH = 300,                  /* tCATCH  */
+    tCLASS = 301,                  /* tCLASS  */
+    tCONST = 302,                  /* tCONST  */
+    tDEBUGGER = 303,               /* tDEBUGGER  */
+    tDEFAULT = 304,                /* tDEFAULT  */
+    tDO = 305,                     /* tDO  */
+    tENUM = 306,                   /* tENUM  */
+    tEXPORT = 307,                 /* tEXPORT  */
+    tEXTENDS = 308,                /* tEXTENDS  */
+    tFINALLY = 309,                /* tFINALLY  */
+    tIMPORT = 310,                 /* tIMPORT  */
+    tPRIVATE = 311,                /* tPRIVATE  */
+    tPUBLIC = 312,                 /* tPUBLIC  */
+    tSIZEOF = 313,                 /* tSIZEOF  */
+    tSTRUCT = 314,                 /* tSTRUCT  */
+    tSUPER = 315,                  /* tSUPER  */
+    tSWITCH = 316,                 /* tSWITCH  */
+    tTHROW = 317,                  /* tTHROW  */
+    tTRY = 318,                    /* tTRY  */
+    tEQ = 319,                     /* tEQ  */
+    tLE = 320,                     /* tLE  */
+    tGE = 321,                     /* tGE  */
+    tNE = 322,                     /* tNE  */
+    tAND = 323,                    /* tAND  */
+    tOR = 324,                     /* tOR  */
+    tPLUSPLUS = 325,               /* tPLUSPLUS  */
+    tMINUSMINUS = 326,             /* tMINUSMINUS  */
+    tLSHIFT = 327,                 /* tLSHIFT  */
+    tRSSHIFT = 328,                /* tRSSHIFT  */
+    tRSZSHIFT = 329,               /* tRSZSHIFT  */
+    tADDA = 330,                   /* tADDA  */
+    tSUBA = 331,                   /* tSUBA  */
+    tMULA = 332,                   /* tMULA  */
+    tDIVA = 333,                   /* tDIVA  */
+    tANDA = 334,                   /* tANDA  */
+    tORA = 335,                    /* tORA  */
+    tXORA = 336,                   /* tXORA  */
+    tREMA = 337,                   /* tREMA  */
+    tLSHIFTA = 338,                /* tLSHIFTA  */
+    tRSSHIFTA = 339,               /* tRSSHIFTA  */
+    tRSZSHIFTA = 340               /* tRSZSHIFTA  */
+  };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
-/* Tokens.  */
+/* Token kinds.  */
+#define YYEMPTY -2
+#define YYEOF 0
+#define YYerror 256
+#define YYUNDEF 257
 #define tINVALID 258
 #define tTRUE 259
 #define tFALSE 260
@@ -209,13 +229,12 @@
 #define tRSSHIFTA 339
 #define tRSZSHIFTA 340
 
-
-
-
+/* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE
-#line 34 "wmlscript/wsgram.y"
+union YYSTYPE
 {
+#line 27 "wmlscript/wsgram.y"
+
     WsUInt32 integer;
     WsFloat vfloat;
     char *identifier;
@@ -230,28 +249,31 @@ typedef union YYSTYPE
 
     WsStatement *stmt;
     WsExpression *expr;
-}
-/* Line 1529 of yacc.c.  */
-#line 236 "y.tab.h"
-	YYSTYPE;
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
-# define YYSTYPE_IS_DECLARED 1
+
+#line 254 "y.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
+# define YYSTYPE_IS_DECLARED 1
 #endif
 
-
-
+/* Location type.  */
 #if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
-typedef struct YYLTYPE
+typedef struct YYLTYPE YYLTYPE;
+struct YYLTYPE
 {
   int first_line;
   int first_column;
   int last_line;
   int last_column;
-} YYLTYPE;
-# define yyltype YYLTYPE /* obsolescent; will be withdrawn */
+};
 # define YYLTYPE_IS_DECLARED 1
 # define YYLTYPE_IS_TRIVIAL 1
 #endif
 
 
+
+int ws_yy_parse (WsCompiler *pctx);
+
+#endif /* !YY_WS_YY_Y_TAB_H_INCLUDED  */

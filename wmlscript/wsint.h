@@ -293,6 +293,6 @@ void ws_lexer_free_block(WsCompiler *compiler, void *ptr);
 void ws_lexer_free_utf8(WsCompiler *compiler, WsUtf8String *string);
 
 /* The parser. */
-int ws_yy_parse(void *context);
+int ws_yy_parse(WsCompiler *compiler);
 
 #endif /* not WSINT_H */

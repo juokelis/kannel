@@ -71,6 +71,11 @@ AC_CONFIG_AUX_DIR(.)
 AC_SET_TERMINAL_SEQUENCES()
 AC_CONFIG_NICE(config.nice)
 
+dnl Set build date from SOURCE_DATE_EPOCH or current date
+SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(date +%s)}"
+BUILD_DATE=$(date -u -d "@$SOURCE_DATE_EPOCH" "+%Y-%m-%d" 2>/dev/null || date -u -r "$SOURCE_DATE_EPOCH" "+%Y-%m-%d" 2>/dev/null || date -u "+%Y-%m-%d")
+AC_SUBST(BUILD_DATE)
+
 dnl Check gateway version number.
 VERSION=`head -n 1 VERSION`
 if test "x$VERSION" = "xsvn"; then
@@ -79,9 +84,9 @@ if test "x$VERSION" = "xsvn"; then
   AC_MSG_RESULT([$SVN_REVISION])
   VERSION="$VERSION-r$SVN_REVISION"
 fi
-AC_DEFINE_UNQUOTED(GW_NAME, "Kannel")
-AC_DEFINE_UNQUOTED(GW_VERSION, "$VERSION")
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_DEFINE_UNQUOTED(GW_NAME, "Kannel", [Software name])
+AC_DEFINE_UNQUOTED(GW_VERSION, "$VERSION", [Software version])
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Software version])
 AC_SUBST(GW_VERSION)
 AC_SUBST(VERSION)
 AC_CONFIG_SECTION([Configuring for Kannel gateway version $VERSION])
@@ -122,6 +127,15 @@ AC_PROG_LEX
 AC_CHECK_TOOL(AR, ar)
 AC_PATH_PROG(CONVERT, convert)
 AC_PATH_PROG(PERL, perl)
+
+# Check whether `pkg-config' is available
+AC_ARG_VAR([PKG_CONFIG], [path to pkg-config])
+AC_ARG_VAR([PKG_CONFIG_PATH], [directories to add to the pkg-config search path])
+AC_ARG_VAR([PKG_CONFIG_LIBDIR], [path overriding pkg-config's search path])
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+    AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
+fi
 
 dnl Apply system specific rules.
 dnl Executable extension for systems that need one, i.e. Cygwin
@@ -192,7 +206,7 @@ AC_C_INLINE
 dnl Check for how to do large files
 
 AC_SYS_LARGEFILE(CFLAGS)
-if test "${ac_cv_sys_file_offset_bits}" != no ; then
+if test "${ac_cv_sys_file_offset_bits}" != no && test -n "${ac_cv_sys_file_offset_bits}" ; then
     CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=${ac_cv_sys_file_offset_bits}"
 fi
 if test "${ac_cv_sys_large_files}" != no ; then
@@ -246,16 +260,16 @@ AC_CHECK_HEADERS([net/if.h], [], [],
    # include <sys/socket.h>
    #endif
   ])
-AC_CHECK_HEADERS([sys/ucontext.h], [AC_DEFINE(HAVE_UCONTEXT)],
+AC_CHECK_HEADERS([sys/ucontext.h], [AC_DEFINE(HAVE_UCONTEXT, [1], [Use ucontext])],
   [AC_MSG_WARN(System lacks ucontext.h - user context support)]
 )
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
 AC_TRY_COMPILE(, [char *func = __FUNCTION__;], 
-    	       AC_DEFINE(HAVE___FUNCTION__))
+    	       AC_DEFINE(HAVE___FUNCTION__, [1], [have __FUNCTION__]))
 AC_TRY_COMPILE(, [char *func = __func__;], 
-    	       AC_DEFINE(HAVE___FUNC__))
+    	       AC_DEFINE(HAVE___FUNC__, [1], [have __FUNC__]))
 
 dnl check for iconv
 AM_ICONV
@@ -311,7 +325,7 @@ dnl POSIX nftw()
 
 AC_CHECK_HEADERS(ftw.h, [
   AC_CHECK_FUNC(nftw, [ 
-    AC_DEFINE(HAVE_NFTW)
+    AC_DEFINE(HAVE_NFTW, [1], [nftw])
   ])
 ])
 
@@ -320,7 +334,7 @@ dnl POSIX regular expression check
 
 AC_CHECK_HEADERS(regex.h, [
   AC_CHECK_FUNC(regcomp, [ 
-    AC_DEFINE(HAVE_REGEX)
+    AC_DEFINE(HAVE_REGEX, [1], [regex])
     has_posix_regex=1
   ])
 ])
@@ -373,7 +387,7 @@ pthread_spin_init(&lock, 0);
 pthread_spin_lock(&lock);
 pthread_spin_unlock(&lock);
 pthread_spin_destroy(&lock);
-], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PTHREAD_SPINLOCK_T)], AC_MSG_RESULT(no))
+], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PTHREAD_SPINLOCK_T, [1], [have pthread_spinlock_t])], AC_MSG_RESULT(no))
 
 dnl checking pthread_rwlock support
 AC_MSG_CHECKING([for pthread_rwlock support])
@@ -385,8 +399,8 @@ pthread_rwlock_unlock(&lock);
 pthread_rwlock_wrlock(&lock);
 pthread_rwlock_unlock(&lock);
 pthread_rwlock_destroy(&lock);
-], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PTHREAD_RWLOCK)], AC_MSG_RESULT(no), [
-AC_MSG_RESULT(Cross compiling - assuming suuported) ; AC_DEFINE(HAVE_PTHREAD_RWLOCK)])
+], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PTHREAD_RWLOCK, [1], [have pthread_rwlock_t])], AC_MSG_RESULT(no), [
+AC_MSG_RESULT(Cross compiling - assuming suuported) ; AC_DEFINE(HAVE_PTHREAD_RWLOCK, [1], [have pthread_rwlock_t])])
 
 dnl checking for native semaphore support
 dnl Solaris & HP-UX needs librt.
@@ -405,29 +419,51 @@ int main(void) {
     sem_destroy(&s);
     return 0;
 }
-], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SEMAPHORE)], AC_MSG_RESULT(no), [
-AC_MSG_RESULT(Cross compiling - assuming suuported) ; AC_DEFINE(HAVE_SEMAPHORE)])
+], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SEMAPHORE, [1], [have sempaphore])], AC_MSG_RESULT(no), [
+AC_MSG_RESULT(Cross compiling - assuming suuported) ; AC_DEFINE(HAVE_SEMAPHORE, [1], [have semaphore])])
 
 dnl Check if we have libxml2 installed and which version it is.
 dnl Kannel requires currently at least version 2.6.0 of libxml2.
+dnl Try xml2-config first, then pkg-config.
 
 AC_CONFIG_SECTION([Checking for libxml2 support])
 xml_ver_required="2.6.0"
-AC_PATH_PROGS(XML_CONFIG, xml2-config xml-config, no)
-if test "$XML_CONFIG" = "no"; then
-  AC_MSG_ERROR([You MUST have the libxml2 (aka gnome-xml) library installed])
-else
-  AC_MSG_CHECKING([libxml version])
-  xml_version=`$XML_CONFIG --version`
-  AC_MSG_RESULT([$xml_version])
-  AC_CHECK_VERSION($xml_version, $xml_ver_required, 
-  [ LIBS="$LIBS `$XML_CONFIG --libs`"
-    CFLAGS="$CFLAGS `$XML_CONFIG --cflags`"
+have_libxml="no"
+
+AC_PATH_PROG(XML2_CONFIG, xml2-config, no)
+if test "$XML2_CONFIG" != "no"; then
+  AC_MSG_CHECKING([for libxml2 >= $xml_ver_required via xml2-config])
+  XML2_VERSION=`$XML2_CONFIG --version`
+  AC_CHECK_VERSION($XML2_VERSION, $xml_ver_required, 
+  [ XML2_LIBS=`$XML2_CONFIG --libs`
+    XML2_CFLAGS=`$XML2_CONFIG --cflags`
+    AC_MSG_RESULT([found $XML2_VERSION])
+    have_libxml="yes"
   ],[
-    AC_MSG_ERROR([libxml2 version $xml_version is too old. You need at least $xml_ver_required])
+    AC_MSG_RESULT([not found])
   ])
 fi
 
+if test "$have_libxml" = "no" && test -n "$PKG_CONFIG"; then
+  AC_MSG_CHECKING([for libxml2 >= $xml_ver_required via pkg-config])
+  if `$PKG_CONFIG --exists "libxml-2.0 >= $xml_ver_required"`; then
+    XML2_LIBS=`$PKG_CONFIG --libs libxml-2.0`
+    XML2_CFLAGS=`$PKG_CONFIG --cflags libxml-2.0`
+    XML2_VERSION=`$PKG_CONFIG --modversion libxml-2.0`
+    AC_MSG_RESULT([found $XML2_VERSION])
+    have_libxml="yes"
+  else
+    AC_MSG_RESULT([not found]) 
+  fi
+fi
+
+if test "$have_libxml" = "yes"; then
+  CFLAGS="$CFLAGS $XML2_CFLAGS"
+  LIBS="$LIBS $XML2_LIBS"
+else
+  AC_MSG_ERROR(m4_normalize([libxml2 not found or too old. You MUST have \
+                libxml $xml_ver_required or more recent installed.]))
+fi
 
 dnl Implement the --enable-pcre option. This will set HAVE_PCRE in gw-config.h
 dnl accordingly and enable the usage of Perl compatible regular expressions.
@@ -457,8 +493,8 @@ AC_ARG_ENABLE(pcre,
       AC_CHECK_LIB(pcreposix, regcomp)
       AC_CHECK_HEADERS(pcre.h)
       AC_CHECK_FUNCS(pcre_compile)
-      AC_DEFINE(HAVE_PCRE)
-      AC_DEFINE_UNQUOTED(LIBPCRE_VERSION, "$pcre_version")
+      AC_DEFINE(HAVE_PCRE, [1], [have libpcre])
+      AC_DEFINE_UNQUOTED(LIBPCRE_VERSION, "$pcre_version", [pcre version])
       PCRE="yes"
     fi
   fi
@@ -489,7 +525,7 @@ for loc in /usr /usr/local /sw /opt/local; do
         ${loc}/share/sgml/dsssl/docbook-dsssl-nwalsh/html/docbook.dsl \
         ${loc}/share/dsssl/docbook-dsssl/html/docbook.dsl ; do
       if test "x$found" = "x" ; then 
-	AC_CHECK_FILE($file,HTML_DSL=$file; found=1)
+	AS_IF([test -e "$file"],HTML_DSL=$file; found=1)
       fi
     done
   fi
@@ -507,7 +543,7 @@ for loc in /usr /usr/local /sw /opt/local; do
         ${loc}/share/sgml/dsssl/docbook-dsssl-nwalsh/print/docbook.dsl \
         ${loc}/share/dsssl/docbook-dsssl/print/docbook.dsl ; do
       if test "x$found" = "x" ; then 
-	AC_CHECK_FILE($file,TEX_DSL=$file; found=1)
+	AS_IF([test -e "$file"],TEX_DSL=$file; found=1)
       fi
     done
   fi    
@@ -526,7 +562,7 @@ for loc in /usr /usr/local /sw /opt/local; do
         ${loc}/share/sgml/dsssl/docbook-dsssl-nwalsh/dtds/decls/xml.dcl \
         ${loc}/share/dsssl/docbook-dsssl/dtds/decls/xml.dcl ; do
       if test "x$found" = "x" ; then 
-    AC_CHECK_FILE($file,XML_DCL=$file; found=1)
+        AS_IF([test -e "$file"],XML_DCL=$file; found=1)
       fi
     done
   fi
@@ -634,7 +670,7 @@ if test "x$SUFFIX" != "x" ; then
   AC_MSG_RESULT($SUFFIX)
 fi
 
-AC_DEFINE_UNQUOTED(SUFFIX, "$SUFFIX")
+AC_DEFINE_UNQUOTED(SUFFIX, "$SUFFIX", [suffix])
 AC_SUBST(SUFFIX)
 
 
@@ -669,26 +705,26 @@ AC_MSG_CHECKING(which malloc to use)
 AC_ARG_WITH(malloc,
 [  --with-malloc=OPTION    select malloc wrapper to use: native/check/slow @<:@native@:>@], [
   case "$withval" in
-  native) AC_DEFINE(USE_GWMEM_NATIVE)
+  native) AC_DEFINE(USE_GWMEM_NATIVE, [1], [native malloc])
           AC_MSG_RESULT(native malloc)
           ;;
-  check) AC_DEFINE(USE_GWMEM_CHECK)
+  check) AC_DEFINE(USE_GWMEM_CHECK, [1], [checking malloc])
          AC_MSG_RESULT(checking malloc)
          ;;
-  slow) AC_DEFINE(USE_GWMEM_SLOW)
+  slow) AC_DEFINE(USE_GWMEM_SLOW, [1], [slow malloc])
         AC_MSG_RESULT(slow malloc)
 	;;
   *) echo "Unknown malloc wrapper $withval. Oops."; exit 1 ;;
   esac
 ], [
   case "$mallocdefault" in
-  check) AC_DEFINE(USE_GWMEM_CHECK)
+  check) AC_DEFINE(USE_GWMEM_CHECK, [1], [checking malloc])
      AC_MSG_RESULT(checking malloc)
      ;;
-  slow) AC_DEFINE(USE_GWMEM_SLOW)
+  slow) AC_DEFINE(USE_GWMEM_SLOW, [1], [slow malloc])
         AC_MSG_RESULT(slow malloc)
 	;;
-  *) AC_DEFINE(USE_GWMEM_NATIVE)
+  *) AC_DEFINE(USE_GWMEM_NATIVE, [1], [native malloc])
           AC_MSG_RESULT(native malloc)
           ;;
   esac
@@ -702,13 +738,13 @@ AC_ARG_ENABLE(assertions,
   if test "$enableval" = "no"
   then
     echo disabling assertion checking
-    AC_DEFINE(NO_GWASSERT)
+    AC_DEFINE(NO_GWASSERT, [1], [no assertions])
   fi
 ], [
   if test "$assertiondefault" = "no"
   then
     echo disabling assertion checking
-    AC_DEFINE(NO_GWASSERT)
+    AC_DEFINE(NO_GWASSERT, [1], [no assertions])
   fi
 ])
 
@@ -741,7 +777,7 @@ AC_ARG_ENABLE(debug,
   if test -n "$GCC"; then
     CFLAGS="$CFLAGS -Wall"
   fi
-  AC_DEFINE(WS_DEBUG)
+  AC_DEFINE(WS_DEBUG, [1], [wml debug])
 ])
 
 
@@ -751,11 +787,11 @@ AC_ARG_ENABLE(localtime,
 [  --enable-localtime	  log file time stamps in local time, not GMT @<:@enabled@:>@], [
   if test "$enableval" = yes; then
       echo enabling local time
-      AC_DEFINE(LOG_TIMESTAMP_LOCALTIME)
+      AC_DEFINE(LOG_TIMESTAMP_LOCALTIME, [1], [use localtime in logs])
   fi
 ],[
   echo enabling local time
-  AC_DEFINE(LOG_TIMESTAMP_LOCALTIME)
+  AC_DEFINE(LOG_TIMESTAMP_LOCALTIME, [1], [use localtime in logs])
 ])
 
 
@@ -764,7 +800,7 @@ dnl --enable-mutex-stats option.
 AC_ARG_ENABLE(mutex-stats,
 [  --enable-mutex-stats    produce information about lock contention], [
   if test "$enableval" = yes; then
-      AC_DEFINE(MUTEX_STATS)
+      AC_DEFINE(MUTEX_STATS, [1], [enable lock contention info])
   fi
 ])
 
@@ -775,13 +811,13 @@ AC_ARG_ENABLE(cookies,
 [  --disable-cookies       disable cookie support for WSP @<:@enabled@:>@], [
   if test "$enableval" = yes; then
     echo enabling cookies
-    AC_DEFINE(ENABLE_COOKIES)
+    AC_DEFINE(ENABLE_COOKIES, [1], [enable cookie support for WSP])
   else
     echo disabling cookies
   fi
 ],[
   echo enabling cookies
-  AC_DEFINE(ENABLE_COOKIES)
+  AC_DEFINE(ENABLE_COOKIES, [1], [enable cookie support for WSP])
 ])
 
 
@@ -791,13 +827,13 @@ AC_ARG_ENABLE(keepalive,
 [  --disable-keepalive     disable HTTP/1.1 keep-alive support @<:@enabled@:>@], [
   if test "$enableval" = yes; then
     echo enabling HTTP/1.1 keep-alive
-    AC_DEFINE(USE_KEEPALIVE)
+    AC_DEFINE(USE_KEEPALIVE, [1], [keepalive])
   else
     echo disabling HTTP/1.1 keep-alive
   fi
 ],[
   echo enabling HTTP/1.1 keep-alive
-  AC_DEFINE(USE_KEEPALIVE)
+  AC_DEFINE(USE_KEEPALIVE, [1], [keepalive])
 ])
 
 
@@ -828,7 +864,7 @@ AC_ARG_ENABLE(wap,
   if test "$enableval" = "no"
   then
     echo disabling WAP gateway parts in bearerbox
-    AC_DEFINE(NO_WAP)
+    AC_DEFINE(NO_WAP, [1], [no wap])
   fi
 ])
 
@@ -837,7 +873,7 @@ AC_ARG_ENABLE(sms,
   if test "$enableval" = "no"
   then
     echo disabling SMS gateway parts in bearerbox
-    AC_DEFINE(NO_SMS)
+    AC_DEFINE(NO_SMS, [1], [no sms])
   fi
 ])
 
@@ -929,6 +965,7 @@ if test "x$ssllib" != "x" && test "x$sslinc" != "x"; then
                        openssl/hmac.h)
       AC_MSG_CHECKING(whether the OpenSSL library is multithread-enabled)
       AC_TRY_RUN([
+        #include <stdlib.h>
         #define OPENSSL_THREAD_DEFINES
         #include <openssl/opensslconf.h>
         int main(void) {
@@ -942,7 +979,7 @@ if test "x$ssllib" != "x" && test "x$sslinc" != "x"; then
         }
       ], [
         AC_MSG_RESULT(yes)
-        AC_DEFINE(HAVE_LIBSSL)
+        AC_DEFINE(HAVE_LIBSSL, [1], [enable SSL])
         LIBS="$LIBS -lssl"
         AC_MSG_CHECKING([whether to compile with SSL support])
         AC_MSG_RESULT(yes)
@@ -988,6 +1025,16 @@ else
     ])
     
     AC_MSG_RESULT(searching)
+    mysql_found=no
+    AS_IF([test "x$mysqlloc" = x],,[
+      PKG_CHECK_MODULES([MYSQLCLIENT],[mysqlclient],[
+        CFLAGS="$CFLAGS $MYSQLCLIENT_CFLAGS"
+        LIBS="$LIBS $MYSQLCLIENT_LIBS"
+	mysql_found=yes
+      ])
+    ])
+
+    if test "$mysql_found" = no; then
     AC_PATH_PROG(MYSQL_CONFIG, mysql_config, no, [$PATH:$mysqlloc/bin:$mysqlloc])
     dnl check for MySQL 4.x style mysql_config information
     if test "$MYSQL_CONFIG" = "no"; then
@@ -996,9 +1043,9 @@ else
         if test "x$found" = "x" ; then
             AC_MSG_CHECKING([for MySQL client support in])
             AC_MSG_RESULT($loc)
-            AC_CHECK_FILE("$loc/include/mysql/mysql.h",
+            AS_IF([test -e "$loc/include/mysql/mysql.h"],
             [CFLAGS="$CFLAGS -I$loc/include/mysql"; LIBS="$LIBS -L$loc/lib/mysql -lmysqlclient"]; found=1,
-            [AC_CHECK_FILE("$loc/include/mysql.h",
+            [AS_IF([test -e "$loc/include/mysql.h"],
                 [CFLAGS="$CFLAGS -I$loc/include"; LIBS="$LIBS -L$loc/lib -lmysqlclient"]; found=1
             )]
             )
@@ -1038,11 +1085,12 @@ else
         CFLAGS="$CFLAGS $MYSQL_CFLAGS"
         AC_MSG_RESULT([$MYSQL_CFLAGS])
     fi
+    fi
     AC_CHECK_HEADERS(mysql/mysql.h mysql/mysql_version.h)
     AC_CHECK_LIB(mysqlclient_r, mysql_stmt_init, [],
 		AC_CHECK_LIB(mysqlclient, mysql_stmt_init, [], [AC_MSG_ERROR([Unable to find MySQL client libraries version >= 4.1])])
     )
-    AC_DEFINE(HAVE_MYSQL)
+    AC_DEFINE(HAVE_MYSQL, [1], [enable mysql])
     AC_MSG_CHECKING([whether to compile with MySQL support])
     AC_MSG_RESULT(yes)
     MYSQL="yes"
@@ -1074,8 +1122,8 @@ else
     LIBS="$LIBS `$SDB_CONFIG --libs`"
     AC_CHECK_LIB(sdb, sdb_init, 
       [LIBS="$LIBS -lsdb" 
-       AC_DEFINE(HAVE_SDB)
-       AC_DEFINE_UNQUOTED(LIBSDB_VERSION, "$sdb_version")
+       AC_DEFINE(HAVE_SDB, [1], [enable libsdb])
+       AC_DEFINE_UNQUOTED(LIBSDB_VERSION, "$sdb_version", [sdb version])
        SDB="yes"], 
       [AC_MSG_ERROR([Unable to find libSDB client libraries])]
     )
@@ -1100,7 +1148,7 @@ else
     LIBS="$LIBS -L/usr/local/lib"
     AC_CHECK_LIB(sqlite, sqlite_open, 
       [LIBS="$LIBS -lsqlite" 
-       AC_DEFINE(HAVE_SQLITE)
+       AC_DEFINE(HAVE_SQLITE, [1], [enable sqlite2])
        SQLITE="yes"], 
       [AC_MSG_ERROR([Unable to find SQLite2 client libraries])]
     )
@@ -1132,7 +1180,7 @@ else
     LIBS="$LIBS -L/usr/local/lib"
     AC_CHECK_LIB(sqlite3, sqlite3_open, 
       [LIBS="$LIBS -lsqlite3" 
-       AC_DEFINE(HAVE_SQLITE3)
+       AC_DEFINE(HAVE_SQLITE3, [1], [enable sqlite3])
        SQLITE3="yes"], 
       [AC_MSG_ERROR([Unable to find SQLite3 client libraries])]
     )
@@ -1236,11 +1284,11 @@ else
     		if test "x$found" = "x" ; then
     			AC_MSG_CHECKING([for PostgresSQL include files in])
     			AC_MSG_RESULT($loc)
-    			AC_CHECK_FILE("$loc/include/postgresql/libpq-fe.h",
+    			AS_IF([test -e "$loc/include/postgresql/libpq-fe.h"],
             	  [CFLAGS="$CFLAGS -I$loc/include/postgresql"; LIBS="$LIBS -L$loc/lib/postgresql -lpq"]; found=1,
-            	  [AC_CHECK_FILE("$loc/include/pgsql/libpq-fe.h",
+            	  [AS_IF([test -e "$loc/include/pgsql/libpq-fe.h"],
             	    [CFLAGS="$CFLAGS -I$loc/include/pgsql"; LIBS="$LIBS -L$loc/lib/pgsql -lpq"]; found=1,
-            	    [AC_CHECK_FILE("$loc/pgsql/include/libpq-fe.h",
+            	    [AS_IF([test -e "$loc/pgsql/include/libpq-fe.h"],
             	    [CFLAGS="$CFLAGS -I$loc/pgsql/include"; LIBS="$LIBS -L$loc/pgsql/lib -lpq"]; found=1,
                   )]
                 )])
@@ -1271,7 +1319,7 @@ else
     
     AC_CHECK_HEADERS(libpq-fe.h)
     AC_CHECK_LIB(pq, PQconnectdb, [])
-    AC_DEFINE(HAVE_PGSQL)
+    AC_DEFINE(HAVE_PGSQL, [1], [enable postgresql])
     AC_MSG_CHECKING([whether to compile with PostgreSQL support])
     AC_MSG_RESULT(yes)
     PGSQL="yes"
@@ -1309,9 +1357,9 @@ else
             if test "x$found" = "x" ; then
                 AC_MSG_CHECKING([for Redis include files in])
                 AC_MSG_RESULT($loc)
-                AC_CHECK_FILE("$loc/hiredis.h",
+                AS_IF([test -e "$loc/hiredis.h"],
                   [CFLAGS="$CFLAGS -I$loc"; LIBS="$LIBS -L$loc -lhiredis"]; found=1,
-                  [AC_CHECK_FILE("$loc/include/hiredis/hiredis.h",
+                  [AS_IF([test -e "$loc/include/hiredis/hiredis.h"],
                     [CFLAGS="$CFLAGS -I$loc/include/hiredis"; LIBS="$LIBS -L$loc/lib -lhiredis"]; found=1
                   )]
                 )
@@ -1340,7 +1388,7 @@ else
         AC_MSG_RESULT([$REDIS_CFLAGS])
     fi
     AC_CHECK_HEADERS(hiredis/hiredis.h)
-    AC_DEFINE(HAVE_REDIS)
+    AC_DEFINE(HAVE_REDIS, [1], [enable redis])
     AC_MSG_CHECKING([whether to compile with Redis support])
     AC_MSG_RESULT(yes)
     REDIS="yes"
@@ -1407,7 +1455,7 @@ else
         if test "x$found" = "x" ; then
             AC_MSG_CHECKING([for Cassandra include files in])
             AC_MSG_RESULT($loc)
-            AC_CHECK_FILE("$loc/include/cassandra.h",
+            AS_IF([test -e "$loc/include/cassandra.h"],
               [CFLAGS="$CFLAGS -I$loc/include"; LIBS="$LIBS -L$loc/lib -lcassandra"]; found=1
             )
         fi
@@ -1416,7 +1464,7 @@ else
         AC_MSG_ERROR([Unable to find cassandra.h, please provide a --with-cassandra-dir=<dir> location])
     fi
     AC_CHECK_HEADERS(cassandra.h)
-    AC_DEFINE(HAVE_CASS)
+    AC_DEFINE(HAVE_CASS, [1], [enable cassandra])
     AC_MSG_CHECKING([whether to compile with Cassandra support])
     AC_MSG_RESULT(yes)
     CASS="yes"
@@ -1438,7 +1486,7 @@ AC_ARG_WITH(wtls,
   openssl) 
     AC_CHECK_LIB(crypto, RSA_new,
     [ AC_CHECK_HEADERS(openssl/objects.h openssl/rc5.h, 
-        AC_DEFINE(HAVE_WTLS_OPENSSL),
+        AC_DEFINE(HAVE_WTLS_OPENSSL, [1], [enable WTLS]),
         AC_MSG_WARN(OpenSSL installation seems to lack RC5 algorithm!)
       )
 	])
@@ -1504,7 +1552,7 @@ AC_ARG_WITH(gsoap,
   fi
 
   SOAP_INCLUDE="include soap/Makefile"
-  AC_DEFINE(HAVE_GSOAP)
+  AC_DEFINE(HAVE_GSOAP, [1], [having gsoap])
   AC_SUBST(WSDL2H)
   AC_SUBST(SOAPCPP)
   AC_SUBST(SOAP_INCLUDE)
@@ -1515,6 +1563,15 @@ AC_ARG_WITH(gsoap,
 
 
 dnl Final Output
+
+AH_BOTTOM([
+/* If we're using GCC, we can get it to check format function arguments. */
+#ifdef __GNUC__
+    #define PRINTFLIKE(a,b) __attribute__((format(printf, a, b)))
+#else
+    #define PRINTFLIKE(a, b)
+#endif
+])
 
 AC_CONFIG_SECTION([Generating output files]) 
 AC_OUTPUT([
