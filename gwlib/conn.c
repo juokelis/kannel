@@ -1356,7 +1356,6 @@ void conn_shutdown_ssl(void)
         SSL_CTX_free(global_ssl_context);
     
     CONF_modules_free();
-    ERR_remove_state(0);
     ENGINE_cleanup();
     CONF_modules_unload(1);
     ERR_free_strings();
@@ -1370,7 +1369,6 @@ void server_shutdown_ssl(void)
         SSL_CTX_free(global_server_ssl_context);
 
     CONF_modules_free();
-    ERR_remove_state(0);
     ENGINE_cleanup();
     CONF_modules_unload(1);
     ERR_free_strings();
