@@ -1,0 +1,25 @@
+Description: Print the errors from the test suite on failure
+ If the test suite failed, print the errors we have collected from
+ each failing test, so that we can diagnose them just from the logs.
+Author: Guillem Jover <gjover@sipwise.com>
+
+---
+ utils/run-checks |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+--- a/utils/run-checks
++++ b/utils/run-checks
+@@ -22,8 +22,11 @@ done
+ 
+ if test -s check.log
+ then
+-	echo At least one check failed, see \`check.log\'.
++	echo "At least one check failed, see 'check.log'."
++	echo ',----'
++	cat check.log
++	echo '`----'
+ else
+-	echo All checks OK.
++	echo "All checks OK."
+ 	rm -f check.log
+ fi

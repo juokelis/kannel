@@ -1,0 +1,38 @@
+Description: disable build of PostScript documentation
+ The ImageMagick package in Ubuntu (but not Debian) no longer permits
+ conversion to or from PostScript, so we can no longer generate working
+ PostScript documentation. See the bug for the discussion on this.
+Author: Robie Basak <robie.basak@canonical.com>
+Bug-Ubuntu: https://launchpad.net/bugs/1838425
+Forwarded: not-needed
+Last-Update: 2019-07-30
+
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -161,7 +161,7 @@
+ man8pages = gw/kannel.8
+ 
+ docsrcs = $(wildcard grep -l '<!DOCTYPE ' doc/*/*.xml)
+-docs = $(docsrcs:.xml=.html) $(docsrcs:.xml=.rtf) $(docsrcs:.xml=.ps) $(docsrcs:.xml=.pdf)
++docs = $(docsrcs:.xml=.html) $(docsrcs:.xml=.rtf) $(docsrcs:.xml=.pdf)
+ DOCSTARGET=@DOCSTARGET@
+ DOCDRAFTS=@DOCDRAFTS@
+ 
+@@ -169,7 +169,7 @@
+ ps = $(pssrcs:.png=.ps)  
+ 
+ figsrcs = $(wildcard doc/userguide/*.fig doc/arch/*.fig)
+-figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
++figs = $(figsrcs:.fig=.png)
+ 
+ .SUFFIXES: $(SUFFIXES) .xml .html .rtf .ps .fig .png .y .c .i .o .pdf
+ 
+@@ -234,7 +234,7 @@
+ 	done
+ progs: $(progs)
+ tests: $(testprogs)
+-docs: figs ps $(docs)
++docs: figs $(docs)
+ no-docs:
+ figs: $(figs)
+ ps: $(ps)

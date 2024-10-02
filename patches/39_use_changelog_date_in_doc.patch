@@ -1,0 +1,141 @@
+Description: Use debian changelog date in doc
+ Uses the date from SOURCE_DATE_EPOCH in documentation,
+ instead of current date.
+Author: Alexis Bienvenüe <pado@passoire.fr>
+Last-Update: 2016-12-03
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -60,6 +60,7 @@
+ RANLIB = @RANLIB@
+ SHELL = @SHELL@
+ VERSION = @VERSION@
++BUILD_DATE = @BUILD_DATE@
+ SUFFIX = @SUFFIX@
+ LEX = @LEX@
+ PERL = @PERL@
+@@ -173,17 +174,17 @@
+ .SUFFIXES: $(SUFFIXES) .xml .html .rtf .ps .fig .png .y .c .i .o .pdf
+ 
+ .xml.html:
+-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $(XML_DCL) $*.tmp > $@
+ 	rm -f $*.tmp
+ 
+ .xml.rtf:
+-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) $(XML_DCL) `basename $*`.tmp
+ 	rm -f $*.tmp
+ 
+ .xml.ps:
+-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
+ 	rm -f $*.tmp
+ 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
+@@ -195,7 +196,7 @@
+ 	rm -f $*.dvi $*.tex $*.aux 
+ 
+ .xml.pdf:
+-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
+ 	rm -f $*.tmp
+ 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
+--- a/addons/opensmppbox/Makefile.am
++++ b/addons/opensmppbox/Makefile.am
+@@ -6,6 +6,7 @@
+ DOCSTARGET=@DOCSTARGET@
+ DOCDRAFTS=@DOCDRAFTS@
+ RPMPKG=opensmppbox-@PACKAGE_VERSION@
++BUILD_DATE=@BUILD_DATE@
+ 
+ pssrcs = $(wildcard doc/*.png)
+ ps = $(pssrcs:.png=.ps)  
+@@ -14,17 +15,17 @@
+ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
+ 
+ .xml.html:
+-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $(XML_DCL) $*.tmp > $@
+ 	rm -f $*.tmp
+ 
+ .xml.rtf:
+-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) $(XML_DCL) `basename $*`.tmp
+ 	rm -f $*.tmp
+ 
+ .xml.ps:
+-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
+ 	rm -f $*.tmp
+ 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
+@@ -36,7 +37,7 @@
+ 	rm -f $*.dvi $*.tex $*.aux 
+ 
+ .xml.pdf:
+-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
+ 	rm -f $*.tmp
+ 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
+--- a/addons/sqlbox/Makefile.am
++++ b/addons/sqlbox/Makefile.am
+@@ -6,6 +6,7 @@
+ DOCSTARGET=@DOCSTARGET@
+ DOCDRAFTS=@DOCDRAFTS@
+ RPMPKG=sqlbox-@PACKAGE_VERSION@
++BUILD_DATE=@BUILD_DATE@
+ 
+ pssrcs = $(wildcard doc/*.png)
+ ps = $(pssrcs:.png=.ps)  
+@@ -14,17 +15,17 @@
+ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
+ 
+ .xml.html:
+-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $(XML_DCL) $*.tmp > $@
+ 	rm -f $*.tmp
+ 
+ .xml.rtf:
+-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) $(XML_DCL) `basename $*`.tmp
+ 	rm -f $*.tmp
+ 
+ .xml.ps:
+-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
+ 	rm -f $*.tmp
+ 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
+@@ -36,7 +37,7 @@
+ 	rm -f $*.dvi $*.tex $*.aux 
+ 
+ .xml.pdf:
+-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
++	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+ 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
+ 	rm -f $*.tmp
+ 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
+--- a/configure.in
++++ b/configure.in
+@@ -71,6 +71,11 @@
+ AC_SET_TERMINAL_SEQUENCES()
+ AC_CONFIG_NICE(config.nice)
+ 
++dnl Set build date from SOURCE_DATE_EPOCH or current date
++SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(date +%s)}"
++BUILD_DATE=$(date -u -d "@$SOURCE_DATE_EPOCH" "+%Y-%m-%d" 2>/dev/null || date -u -r "$SOURCE_DATE_EPOCH" "+%Y-%m-%d" 2>/dev/null || date -u "+%Y-%m-%d")
++AC_SUBST(BUILD_DATE)
++
+ dnl Check gateway version number.
+ VERSION=`head -n 1 VERSION`
+ if test "x$VERSION" = "xsvn"; then

@@ -1,0 +1,119 @@
+Description: Fix upstream Makefile to cope with new release changes.
+ The utils/ directory uses automake, so it does not support the custom
+ rules that the root directory autoconf Makefile.in supports. Remove
+ any dependency from these rules to avoid calling them. And switch any
+ remaining dependencies for rules that are supported within utils/ to
+ use an explicit loop over SUBDIRS and recurse into them, otherwise the
+ old SUBDIRS target was passing on all targets specified to make on the
+ command-line, which meant the unsupported targets were leaking into
+ the SUBDIRS, breaking the build.
+Author: Guillem Jover <gjover@sipwise.com>
+Last-Update: 2018-09-12
+---
+This patch header follows DEP-3: https://dep.debian.net/deps/dep3/
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -227,7 +227,10 @@
+ .c.i:
+ 	$(CC) $(CFLAGS) -o $@ -E $<
+ 
+-all: $(libs) $(SUBDIRS) progs $(testprogs) $(checkprogs) $(DOCSTARGET) gw-config
++all: $(libs) progs $(testprogs) $(checkprogs) $(DOCSTARGET) gw-config
++	for dir in $(SUBDIRS); do \
++		$(MAKE) -C $$dir $@; \
++	done
+ progs: $(progs)
+ tests: $(testprogs)
+ docs: figs ps $(docs)
+@@ -236,15 +239,21 @@
+ ps: $(ps)
+ pp: $(pres)
+ 
+-check: all $(SUBDIRS)
++check: all
++	for dir in $(SUBDIRS); do \
++		$(MAKE) -C $$dir $@; \
++	done
+ 	utils/run-checks $(checks)
+ 
+-bench: all $(benchformats) $(SUBDIRS)
++bench: all $(benchformats)
+ benchmarks/report.xml: dummy
+ 	benchmarks/run-benchmarks benchmarks/*.sh
+ dummy:
+ 
+-install: all $(SUBDIRS)
++install: all
++	for dir in $(SUBDIRS); do \
++		$(MAKE) -C $$dir $@; \
++	done
+ 	$(INSTALL) -d $(DESTDIR)$(bindir)
+ 	for prog in $(binprogs); do \
+ 		$(INSTALL) $$prog \
+@@ -277,7 +286,7 @@
+ 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel
+ 	$(INSTALL_DATA) lib*.a $(DESTDIR)$(libdir)/kannel
+ 
+-install-test: all $(SUBDIRS)
++install-test: all
+ 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel
+ 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel/test
+ 	(cd test && find . -type f ! -name "*.c" ! -name "*.o" | grep -v ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(libdir)/kannel/test ; done)
+@@ -285,20 +294,20 @@
+                 chmod 755 $(DESTDIR)$(libdir)/kannel/$$prog ; \
+         done
+ 
+-install-checks: all $(SUBDIRS)
++install-checks: all
+ 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel/checks
+ 	(cd checks && find . -type f ! -name "*.c" ! -name "*.o" | grep -v ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(libdir)/kannel/checks ; done)
+ 	for prog in $(checks) ; do \
+                 chmod 755 $(DESTDIR)$(libdir)/kannel/$$prog ; \
+         done
+ 
+-install-contrib: all $(SUBDIRS)
++install-contrib: all
+ 	$(INSTALL) -d $(DESTDIR)$(docdir)/contrib
+ 	(cd contrib && find . -type d ! -name "CVS" | while read a ; do $(INSTALL) -d $(DESTDIR)$(docdir)/contrib/$$a ; done )
+ 	(cd contrib && find . -type f ! -name ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(docdir)/contrib/$$a ; done )
+ 	find $(DESTDIR)$(docdir)/contrib/ -name "*.pl" -o -name "*.sh" -o -name "*.cgi" -o -name "sendsms" -o -name "kannel.monitor" | while read a ; do chmod 755 "$$a" ; done
+ 
+-install-docs: $(SUBDIRS)
++install-docs:
+ 	$(INSTALL) -d $(DESTDIR)$(docdir)/examples
+ 	$(INSTALL_DATA) doc/examples/*.conf $(DESTDIR)$(docdir)/examples
+ 	for docfile in userguide alligata wtls ; do \
+@@ -310,13 +319,19 @@
+ 		$(INSTALL_DATA) doc/$$docfile/*.png $(DESTDIR)$(docdir)/$$docfile ; \
+ 	done
+ 	
+-clean: $(SUBDIRS)
++clean:
++	for dir in $(SUBDIRS); do \
++		$(MAKE) -C $$dir $@; \
++	done
+ 	find . -name "*.o" -o -name "*.i" -o -name "*.a" | xargs rm -f
+ 	rm -f core gw-config $(progs) $(testprogs) $(checkprogs)
+ 	rm -f $(figs) $(ps) $(docs)
+ 	rm -f $(benchoutputs)
+ 
+-distclean: clean $(SUBDIRS)
++distclean: clean
++	for dir in $(SUBDIRS); do \
++		$(MAKE) -C $$dir $@; \
++	done
+ 	rm -f Makefile gw-config.h config.cache config.log config.status config.nice .depend gwlib/gw_uuid_types.h
+ 
+ nag:
+@@ -376,10 +391,7 @@
+ 		"@VERSION@" > gw-config
+ 	chmod 0755 gw-config
+ 
+-$(SUBDIRS):
+-	$(MAKE) -C $@ $(MAKECMDGOALS)
+-	
+ am--refresh:
+ 	@:
+ 
+-.PHONY: $(SUBDIRS) am--refresh
++.PHONY: am--refresh

@@ -1,0 +1,24 @@
+Description: Puts correct url to local docs in man pages
+Author: Paul Dwerryhouse <paul@dwerryhouse.com.au>
+Last-Update: 2010-02-06
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/gw/kannel.8
++++ b/gw/kannel.8
+@@ -37,7 +37,7 @@
+ see 
+ .B http://www.kannel.org
+ or
+-.BR file://usr/doc/kannel/ .
++.BR file:///usr/share/doc/kannel/ .
+ .SH "SEE ALSO"
+ .BR run_kannel_box (8),
+ .BR seewbmp (1).
+--- a/utils/run_kannel_box.8
++++ b/utils/run_kannel_box.8
+@@ -28,4 +28,4 @@
+ see 
+ .B http://www.kannel.org
+ or
+-.BR file://usr/doc/kannel/ .
++.BR file:///usr/share/doc/kannel/ .

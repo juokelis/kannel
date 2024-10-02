@@ -1,0 +1,16 @@
+Description: Remove soap/Makefile in distclean target
+Author: Jonas Smedegaard <dr@jones.dk>
+Last-Update: 2016-05-29
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -332,7 +332,7 @@
+ 	for dir in $(SUBDIRS); do \
+ 		$(MAKE) -C $$dir $@; \
+ 	done
+-	rm -f Makefile gw-config.h config.cache config.log config.status config.nice .depend gwlib/gw_uuid_types.h
++	rm -f Makefile soap/Makefile gw-config.h config.cache config.log config.status config.nice .depend gwlib/gw_uuid_types.h
+ 
+ nag:
+ 	utils/find-long-lines

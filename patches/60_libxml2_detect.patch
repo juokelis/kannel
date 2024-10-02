@@ -1,0 +1,78 @@
+Index: kannel/configure.in
+===================================================================
+--- kannel.orig/configure.in
++++ kannel/configure.in
+@@ -128,6 +128,15 @@ AC_CHECK_TOOL(AR, ar)
+ AC_PATH_PROG(CONVERT, convert)
+ AC_PATH_PROG(PERL, perl)
+ 
++# Check whether `pkg-config' is available
++AC_ARG_VAR([PKG_CONFIG], [path to pkg-config])
++AC_ARG_VAR([PKG_CONFIG_PATH], [directories to add to the pkg-config search path])
++AC_ARG_VAR([PKG_CONFIG_LIBDIR], [path overriding pkg-config's search path])
++
++if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
++    AC_PATH_TOOL([PKG_CONFIG], [pkg-config])
++fi
++
+ dnl Apply system specific rules.
+ dnl Executable extension for systems that need one, i.e. Cygwin
+ dnl Set the LIBTOOL to be used to create libs
+@@ -415,24 +424,46 @@ AC_MSG_RESULT(Cross compiling - assuming
+ 
+ dnl Check if we have libxml2 installed and which version it is.
+ dnl Kannel requires currently at least version 2.6.0 of libxml2.
++dnl Try xml2-config first, then pkg-config.
+ 
+ AC_CONFIG_SECTION([Checking for libxml2 support])
+ xml_ver_required="2.6.0"
+-AC_PATH_PROGS(XML_CONFIG, xml2-config xml-config, no)
+-if test "$XML_CONFIG" = "no"; then
+-  AC_MSG_ERROR([You MUST have the libxml2 (aka gnome-xml) library installed])
+-else
+-  AC_MSG_CHECKING([libxml version])
+-  xml_version=`$XML_CONFIG --version`
+-  AC_MSG_RESULT([$xml_version])
+-  AC_CHECK_VERSION($xml_version, $xml_ver_required, 
+-  [ LIBS="$LIBS `$XML_CONFIG --libs`"
+-    CFLAGS="$CFLAGS `$XML_CONFIG --cflags`"
++have_libxml="no"
++
++AC_PATH_PROG(XML2_CONFIG, xml2-config, no)
++if test "$XML2_CONFIG" != "no"; then
++  AC_MSG_CHECKING([for libxml2 >= $xml_ver_required via xml2-config])
++  XML2_VERSION=`$XML2_CONFIG --version`
++  AC_CHECK_VERSION($XML2_VERSION, $xml_ver_required, 
++  [ XML2_LIBS=`$XML2_CONFIG --libs`
++    XML2_CFLAGS=`$XML2_CONFIG --cflags`
++    AC_MSG_RESULT([found $XML2_VERSION])
++    have_libxml="yes"
+   ],[
+-    AC_MSG_ERROR([libxml2 version $xml_version is too old. You need at least $xml_ver_required])
++    AC_MSG_RESULT([not found])
+   ])
+ fi
+ 
++if test "$have_libxml" = "no" && test -n "$PKG_CONFIG"; then
++  AC_MSG_CHECKING([for libxml2 >= $xml_ver_required via pkg-config])
++  if `$PKG_CONFIG --exists "libxml-2.0 >= $xml_ver_required"`; then
++    XML2_LIBS=`$PKG_CONFIG --libs libxml-2.0`
++    XML2_CFLAGS=`$PKG_CONFIG --cflags libxml-2.0`
++    XML2_VERSION=`$PKG_CONFIG --modversion libxml-2.0`
++    AC_MSG_RESULT([found $XML2_VERSION])
++    have_libxml="yes"
++  else
++    AC_MSG_RESULT([not found]) 
++  fi
++fi
++
++if test "$have_libxml" = "yes"; then
++  CFLAGS="$CFLAGS $XML2_CFLAGS"
++  LIBS="$LIBS $XML2_LIBS"
++else
++  AC_MSG_ERROR(m4_normalize([libxml2 not found or too old. You MUST have \
++                libxml $xml_ver_required or more recent installed.]))
++fi
+ 
+ dnl Implement the --enable-pcre option. This will set HAVE_PCRE in gw-config.h
+ dnl accordingly and enable the usage of Perl compatible regular expressions.

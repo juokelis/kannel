@@ -1,0 +1,28 @@
+Description: Support GNU/kFreeBSD using FreeBSD code
+Author: Steven Chamberlain <steven@pyro.eu.org>
+Bug-Debian: https://bugs.debian.org/820155
+Last-Update: 2016-05-29
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/utils/start-stop-daemon.c
++++ b/utils/start-stop-daemon.c
+@@ -88,7 +88,7 @@
+ #define OSHURD
+ #elif defined(SunOS)
+ #elif defined(__CYGWIN__)
+-#elif defined(__FreeBSD__) || defined(__APPLE__)
++#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
+ #define FreeBSD
+ #else
+ #error Unknown architecture - cannot build start-stop-daemon
+--- a/gw/smsc/http/clickatell.c
++++ b/gw/smsc/http/clickatell.c
+@@ -61,6 +61,8 @@
+  * Stipe Tolj <st@tolj.org>, <stolj@kannel.org>
+  */
+ 
++#define _GNU_SOURCE
++
+ #include "gwlib/gwlib.h"
+ 
+ 

@@ -1,0 +1,23 @@
+Description: Fix upstream Makefile to include CPPFAGS
+ The upstream Makefile ignored the fact that $(CC) should be called
+ with CFLAGS _and_ CPPFLAGS. Restore this default make behaviour.
+Author: Chris Hofstaedtler <zeha@debian.org>
+Last-Update: 2019-11-05
+---
+Index: kannel/Makefile.in
+===================================================================
+--- kannel.orig/Makefile.in
++++ kannel/Makefile.in
+@@ -222,10 +222,10 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.
+ 	else :; fi
+ 
+ .c.o:
+-	$(CC) $(CFLAGS) -o $@ -c $<
++	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+ 	
+ .c.i:
+-	$(CC) $(CFLAGS) -o $@ -E $<
++	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -E $<
+ 
+ all: $(libs) progs $(testprogs) $(checkprogs) $(DOCSTARGET) gw-config
+ 	for dir in $(SUBDIRS); do \

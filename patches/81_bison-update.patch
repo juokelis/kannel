@@ -1,0 +1,82 @@
+Description: Update bison source for newer version
+ - Add missing header.
+ - Suppress POSIX yacc compatibility warnings.
+ - Specify arguments to pass to yacc functions.
+ - Replace deprecated directive.
+ - Update function prototypes.
+Author: Guillem Jover <gjover@sipwise.com>
+
+---
+ Makefile.in        |    2 +-
+ wmlscript/wsgram.y |   18 ++++++++----------
+ wmlscript/wsint.h  |    2 +-
+ 3 files changed, 10 insertions(+), 12 deletions(-)
+
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -67,7 +67,7 @@ PERL = @PERL@
+ YACC = @YACC@
+ 
+ # -v gives verbose output.
+-YFLAGS = -d -p ws_yy_
++YFLAGS = -Wno-yacc -d -p ws_yy_
+ 
+ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+ CONFIG_HEADER = gw-config.h
+--- a/wmlscript/wsgram.y
++++ b/wmlscript/wsgram.y
+@@ -13,17 +13,13 @@
+  */
+ 
+ #include "wmlscript/wsint.h"
++#include "wmlscript/wsgram.h"
+ 
+ /* The required yyerror() function.  This is actually not used but to
+    report the internal parser errors.  All other errors are reported
+    by using the `wserror.h' functions. */
+-extern void yyerror(char *msg);
+-
+-#if WS_DEBUG
+-/* Just for debugging purposes. */
+-WsCompilerPtr global_compiler = NULL;
+-#endif /* WS_DEBUG */
+-
++extern void
++ws_yy_error(YYLTYPE *locp, WsCompiler *compiler, char *msg);
+ %}
+ 
+ /* The possible semantic values. */
+@@ -105,7 +101,9 @@ WsCompilerPtr global_compiler = NULL;
+ /* Options for bison. */
+ 
+ /* Generate reentrant parser. */
+-%pure-parser
++%define api.pure
++
++%parse-param {WsCompiler *pctx}
+ 
+ /* This grammar has one shift-reduce conflict.  It comes from the
+    if-else statement. */
+@@ -714,10 +712,10 @@ ArgumentList:
+ %%
+ 
+ void
+-yyerror(char *msg)
++ws_yy_error(YYLTYPE *locp, WsCompiler *compiler, char *msg)
+ {
+ #if WS_DEBUG
+   fprintf(stderr, "*** %s:%ld: wsc: %s - this msg will be removed ***\n",
+-	  global_compiler->input_name, global_compiler->linenum, msg);
++	  compiler->input_name, compiler->linenum, msg);
+ #endif /* WS_DEBUG */
+ }
+--- a/wmlscript/wsint.h
++++ b/wmlscript/wsint.h
+@@ -293,6 +293,6 @@ void ws_lexer_free_block(WsCompiler *com
+ void ws_lexer_free_utf8(WsCompiler *compiler, WsUtf8String *string);
+ 
+ /* The parser. */
+-int ws_yy_parse(void *context);
++int ws_yy_parse(WsCompiler *compiler);
+ 
+ #endif /* not WSINT_H */

@@ -1,0 +1,30 @@
+Description: Strip build date from version_report_string
+ Strip the build date from the version_report_string return value,
+ for reproducibility reasons.
+Author: Alexis Bienvenüe <pado@passoire.fr>
+Last-Update: 2016-12-03
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/gwlib/utils.c
++++ b/gwlib/utils.c
+@@ -551,7 +551,7 @@
+     struct utsname u;
+ 
+     uname(&u);
+-    return octstr_format(GW_NAME " %s version `%s'.\nBuild `%s', compiler `%s'.\n"
++    return octstr_format(GW_NAME " %s version `%s'.\nCompiler `%s'.\n"
+                          "System %s, release %s, version %s, machine %s.\n"
+              "Hostname %s, IP %s.\n"
+              "Libxml version %s.\n"
+@@ -587,10 +587,9 @@
+              "Using %s malloc.\n",
+              boxname, GW_VERSION,
+ #ifdef __GNUC__ 
+-             (__DATE__ " " __TIME__) ,
+              __VERSION__,
+ #else 
+-             "unknown" , "unknown",
++             "unknown",
+ #endif 
+              u.sysname, u.release, u.version, u.machine,
+              octstr_get_cstr(get_official_name()),

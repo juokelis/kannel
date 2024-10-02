@@ -1,0 +1,22 @@
+Author: Santiago Vila <sanvila@debian.org>
+Date: Mon, 9 Sep 2024 19:52:06 +0200
+Subject: fix build with autoconf-2.7
+
+> https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1080146#10
+---
+ configure.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.in b/configure.in
+index 16b7db0..a06c77e 100644
+--- a/configure.in
++++ b/configure.in
+@@ -206,7 +206,7 @@ AC_C_INLINE
+ dnl Check for how to do large files
+ 
+ AC_SYS_LARGEFILE(CFLAGS)
+-if test "${ac_cv_sys_file_offset_bits}" != no ; then
++if test "${ac_cv_sys_file_offset_bits}" != no && test -n "${ac_cv_sys_file_offset_bits}" ; then
+     CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=${ac_cv_sys_file_offset_bits}"
+ fi
+ if test "${ac_cv_sys_large_files}" != no ; then

@@ -1,0 +1,40 @@
+Description: Define _DEFAULT_SOURCE (not _VSD_SOURCE or _SVID_SOURCE)
+Author: Jonas Smedegaard <dr@jones.dk>
+Last-Update: 2016-05-29
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/addons/opensmppbox/configure.in
++++ b/addons/opensmppbox/configure.in
+@@ -138,7 +138,7 @@
+     LIBS="$LIBS -L/opt/local/lib" 
+     ;;
+   *-linux-*)
+-    CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_BSD_SOURCE"
++    CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_DEFAULT_SOURCE"
+     LDFLAGS="$LDFLAGS -rdynamic"
+     ;;
+   *-*-openbsd* | *-*-freebsd*)
+--- a/addons/sqlbox/configure.in
++++ b/addons/sqlbox/configure.in
+@@ -162,7 +162,7 @@
+     LIBTOOL="libtool -static -o"
+     ;;
+   *-linux-*)
+-    CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_BSD_SOURCE"
++    CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_DEFAULT_SOURCE"
+     LDFLAGS="$LDFLAGS -rdynamic"
+     ;;
+   *-*-openbsd* | *-*-freebsd*)
+--- a/gwlib/gw_uuid.c
++++ b/gwlib/gw_uuid.c
+@@ -13,8 +13,8 @@
+  * Force inclusion of SVID stuff since we need it if we're compiling in
+  * gcc-wall wall mode
+  */
+-#ifndef _SVID_SOURCE
+-#define _SVID_SOURCE
++#ifndef _DEFAULT_SOURCE
++#define _DEFAULT_SOURCE
+ #endif
+ 
+ #include "gw-config.h"

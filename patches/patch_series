@@ -1,0 +1,12 @@
+#!/bin/bash
+# Navigate to the folder where the patches and index file are located
+cd ../
+
+# Apply each patch listed in the 'series' file
+while read -r patch; do
+    echo "Applying $patch..."
+    patch -p1 < patches/"$patch"
+done < patches/series
+
+echo "All patches applied."
+

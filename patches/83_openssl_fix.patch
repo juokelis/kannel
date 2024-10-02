@@ -1,0 +1,26 @@
+Description: The function ERR_remove_state(0) has been deprecated since OpenSSL 1.0.0.
+ In newer versions of OpenSSL (1.1.x and later), this function is no longer required,
+ and OpenSSL handles thread state cleanup automatically.
+
+---
+ gwlib/conn.c       |    2 --
+ 1 file changed,  2 deletions(-)
+
+--- a/gwlib/conn.c	
++++ b/gwlib/conn.c	
+@@ -1356,7 +1356,6 @@
+         SSL_CTX_free(global_ssl_context);
+     
+     CONF_modules_free();
+-    ERR_remove_state(0);
+     ENGINE_cleanup();
+     CONF_modules_unload(1);
+     ERR_free_strings();
+@@ -1370,7 +1369,6 @@
+         SSL_CTX_free(global_server_ssl_context);
+ 
+     CONF_modules_free();
+-    ERR_remove_state(0);
+     ENGINE_cleanup();
+     CONF_modules_unload(1);
+     ERR_free_strings();

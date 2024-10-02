@@ -1,0 +1,364 @@
+diff --git a/acinclude.m4 b/acinclude.m4
+index 2b00bf5..45ce560 100644
+--- a/acinclude.m4
++++ b/acinclude.m4
+@@ -139,11 +139,11 @@ AC_TRY_COMPILE([
+    )]
+ )])
+ if test $ac_cv_func_which_gethostname_r -eq 6; then
+-  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_6)
++  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_6, [1], [gethostbyname variant 6])
+ elif test $ac_cv_func_which_gethostname_r -eq 5; then
+-  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_5)
++  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_5, [1], [gethostbyname variant 5])
+ elif test $ac_cv_func_which_gethostname_r -eq 3; then
+-  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_3)
++  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_3, [1], [gethostbyname variant 3])
+ elif test $ac_cv_func_which_gethostname_r -eq 0; then
+   ac_cv_func_which_gethostname_r = no
+ fi
+diff --git a/configure.in b/configure.in
+index 3ff60be..5a767ca 100644
+--- a/configure.in
++++ b/configure.in
+@@ -79,9 +79,9 @@ if test "x$VERSION" = "xsvn"; then
+   AC_MSG_RESULT([$SVN_REVISION])
+   VERSION="$VERSION-r$SVN_REVISION"
+ fi
+-AC_DEFINE_UNQUOTED(GW_NAME, "Kannel")
+-AC_DEFINE_UNQUOTED(GW_VERSION, "$VERSION")
+-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
++AC_DEFINE_UNQUOTED(GW_NAME, "Kannel", [Software name])
++AC_DEFINE_UNQUOTED(GW_VERSION, "$VERSION", [Software version])
++AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Software version])
+ AC_SUBST(GW_VERSION)
+ AC_SUBST(VERSION)
+ AC_CONFIG_SECTION([Configuring for Kannel gateway version $VERSION])
+@@ -246,16 +246,16 @@ AC_CHECK_HEADERS([net/if.h], [], [],
+    # include <sys/socket.h>
+    #endif
+   ])
+-AC_CHECK_HEADERS([sys/ucontext.h], [AC_DEFINE(HAVE_UCONTEXT)],
++AC_CHECK_HEADERS([sys/ucontext.h], [AC_DEFINE(HAVE_UCONTEXT, [1], [Use ucontext])],
+   [AC_MSG_WARN(System lacks ucontext.h - user context support)]
+ )
+ 
+ dnl Checks for typedefs, structures, and compiler characteristics.
+ 
+ AC_TRY_COMPILE(, [char *func = __FUNCTION__;], 
+-    	       AC_DEFINE(HAVE___FUNCTION__))
++    	       AC_DEFINE(HAVE___FUNCTION__, [1], [have __FUNCTION__]))
+ AC_TRY_COMPILE(, [char *func = __func__;], 
+-    	       AC_DEFINE(HAVE___FUNC__))
++    	       AC_DEFINE(HAVE___FUNC__, [1], [have __FUNC__]))
+ 
+ dnl check for iconv
+ AM_ICONV
+@@ -311,7 +311,7 @@ dnl POSIX nftw()
+ 
+ AC_CHECK_HEADERS(ftw.h, [
+   AC_CHECK_FUNC(nftw, [ 
+-    AC_DEFINE(HAVE_NFTW)
++    AC_DEFINE(HAVE_NFTW, [1], [nftw])
+   ])
+ ])
+ 
+@@ -320,7 +320,7 @@ dnl POSIX regular expression check
+ 
+ AC_CHECK_HEADERS(regex.h, [
+   AC_CHECK_FUNC(regcomp, [ 
+-    AC_DEFINE(HAVE_REGEX)
++    AC_DEFINE(HAVE_REGEX, [1], [regex])
+     has_posix_regex=1
+   ])
+ ])
+@@ -373,7 +373,7 @@ pthread_spin_init(&lock, 0);
+ pthread_spin_lock(&lock);
+ pthread_spin_unlock(&lock);
+ pthread_spin_destroy(&lock);
+-], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PTHREAD_SPINLOCK_T)], AC_MSG_RESULT(no))
++], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PTHREAD_SPINLOCK_T, [1], [have pthread_spinlock_t])], AC_MSG_RESULT(no))
+ 
+ dnl checking pthread_rwlock support
+ AC_MSG_CHECKING([for pthread_rwlock support])
+@@ -385,8 +385,8 @@ pthread_rwlock_unlock(&lock);
+ pthread_rwlock_wrlock(&lock);
+ pthread_rwlock_unlock(&lock);
+ pthread_rwlock_destroy(&lock);
+-], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PTHREAD_RWLOCK)], AC_MSG_RESULT(no), [
+-AC_MSG_RESULT(Cross compiling - assuming suuported) ; AC_DEFINE(HAVE_PTHREAD_RWLOCK)])
++], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_PTHREAD_RWLOCK, [1], [have pthread_rwlock_t])], AC_MSG_RESULT(no), [
++AC_MSG_RESULT(Cross compiling - assuming suuported) ; AC_DEFINE(HAVE_PTHREAD_RWLOCK, [1], [have pthread_rwlock_t])])
+ 
+ dnl checking for native semaphore support
+ dnl Solaris & HP-UX needs librt.
+@@ -405,8 +405,8 @@ int main(void) {
+     sem_destroy(&s);
+     return 0;
+ }
+-], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SEMAPHORE)], AC_MSG_RESULT(no), [
+-AC_MSG_RESULT(Cross compiling - assuming suuported) ; AC_DEFINE(HAVE_SEMAPHORE)])
++], [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SEMAPHORE, [1], [have sempaphore])], AC_MSG_RESULT(no), [
++AC_MSG_RESULT(Cross compiling - assuming suuported) ; AC_DEFINE(HAVE_SEMAPHORE, [1], [have semaphore])])
+ 
+ dnl Check if we have libxml2 installed and which version it is.
+ dnl Kannel requires currently at least version 2.6.0 of libxml2.
+@@ -457,8 +457,8 @@ AC_ARG_ENABLE(pcre,
+       AC_CHECK_LIB(pcreposix, regcomp)
+       AC_CHECK_HEADERS(pcre.h)
+       AC_CHECK_FUNCS(pcre_compile)
+-      AC_DEFINE(HAVE_PCRE)
+-      AC_DEFINE_UNQUOTED(LIBPCRE_VERSION, "$pcre_version")
++      AC_DEFINE(HAVE_PCRE, [1], [have libpcre])
++      AC_DEFINE_UNQUOTED(LIBPCRE_VERSION, "$pcre_version", [pcre version])
+       PCRE="yes"
+     fi
+   fi
+@@ -634,7 +634,7 @@ if test "x$SUFFIX" != "x" ; then
+   AC_MSG_RESULT($SUFFIX)
+ fi
+ 
+-AC_DEFINE_UNQUOTED(SUFFIX, "$SUFFIX")
++AC_DEFINE_UNQUOTED(SUFFIX, "$SUFFIX", [suffix])
+ AC_SUBST(SUFFIX)
+ 
+ 
+@@ -669,26 +669,26 @@ AC_MSG_CHECKING(which malloc to use)
+ AC_ARG_WITH(malloc,
+ [  --with-malloc=OPTION    select malloc wrapper to use: native/check/slow @<:@native@:>@], [
+   case "$withval" in
+-  native) AC_DEFINE(USE_GWMEM_NATIVE)
++  native) AC_DEFINE(USE_GWMEM_NATIVE, [1], [native malloc])
+           AC_MSG_RESULT(native malloc)
+           ;;
+-  check) AC_DEFINE(USE_GWMEM_CHECK)
++  check) AC_DEFINE(USE_GWMEM_CHECK, [1], [checking malloc])
+          AC_MSG_RESULT(checking malloc)
+          ;;
+-  slow) AC_DEFINE(USE_GWMEM_SLOW)
++  slow) AC_DEFINE(USE_GWMEM_SLOW, [1], [slow malloc])
+         AC_MSG_RESULT(slow malloc)
+ 	;;
+   *) echo "Unknown malloc wrapper $withval. Oops."; exit 1 ;;
+   esac
+ ], [
+   case "$mallocdefault" in
+-  check) AC_DEFINE(USE_GWMEM_CHECK)
++  check) AC_DEFINE(USE_GWMEM_CHECK, [1], [checking malloc])
+      AC_MSG_RESULT(checking malloc)
+      ;;
+-  slow) AC_DEFINE(USE_GWMEM_SLOW)
++  slow) AC_DEFINE(USE_GWMEM_SLOW, [1], [slow malloc])
+         AC_MSG_RESULT(slow malloc)
+ 	;;
+-  *) AC_DEFINE(USE_GWMEM_NATIVE)
++  *) AC_DEFINE(USE_GWMEM_NATIVE, [1], [native malloc])
+           AC_MSG_RESULT(native malloc)
+           ;;
+   esac
+@@ -702,13 +702,13 @@ AC_ARG_ENABLE(assertions,
+   if test "$enableval" = "no"
+   then
+     echo disabling assertion checking
+-    AC_DEFINE(NO_GWASSERT)
++    AC_DEFINE(NO_GWASSERT, [1], [no assertions])
+   fi
+ ], [
+   if test "$assertiondefault" = "no"
+   then
+     echo disabling assertion checking
+-    AC_DEFINE(NO_GWASSERT)
++    AC_DEFINE(NO_GWASSERT, [1], [no assertions])
+   fi
+ ])
+ 
+@@ -741,7 +741,7 @@ AC_ARG_ENABLE(debug,
+   if test -n "$GCC"; then
+     CFLAGS="$CFLAGS -Wall"
+   fi
+-  AC_DEFINE(WS_DEBUG)
++  AC_DEFINE(WS_DEBUG, [1], [wml debug])
+ ])
+ 
+ 
+@@ -751,11 +751,11 @@ AC_ARG_ENABLE(localtime,
+ [  --enable-localtime	  log file time stamps in local time, not GMT @<:@enabled@:>@], [
+   if test "$enableval" = yes; then
+       echo enabling local time
+-      AC_DEFINE(LOG_TIMESTAMP_LOCALTIME)
++      AC_DEFINE(LOG_TIMESTAMP_LOCALTIME, [1], [use localtime in logs])
+   fi
+ ],[
+   echo enabling local time
+-  AC_DEFINE(LOG_TIMESTAMP_LOCALTIME)
++  AC_DEFINE(LOG_TIMESTAMP_LOCALTIME, [1], [use localtime in logs])
+ ])
+ 
+ 
+@@ -764,7 +764,7 @@ dnl --enable-mutex-stats option.
+ AC_ARG_ENABLE(mutex-stats,
+ [  --enable-mutex-stats    produce information about lock contention], [
+   if test "$enableval" = yes; then
+-      AC_DEFINE(MUTEX_STATS)
++      AC_DEFINE(MUTEX_STATS, [1], [enable lock contention info])
+   fi
+ ])
+ 
+@@ -775,13 +775,13 @@ AC_ARG_ENABLE(cookies,
+ [  --disable-cookies       disable cookie support for WSP @<:@enabled@:>@], [
+   if test "$enableval" = yes; then
+     echo enabling cookies
+-    AC_DEFINE(ENABLE_COOKIES)
++    AC_DEFINE(ENABLE_COOKIES, [1], [enable cookie support for WSP])
+   else
+     echo disabling cookies
+   fi
+ ],[
+   echo enabling cookies
+-  AC_DEFINE(ENABLE_COOKIES)
++  AC_DEFINE(ENABLE_COOKIES, [1], [enable cookie support for WSP])
+ ])
+ 
+ 
+@@ -791,13 +791,13 @@ AC_ARG_ENABLE(keepalive,
+ [  --disable-keepalive     disable HTTP/1.1 keep-alive support @<:@enabled@:>@], [
+   if test "$enableval" = yes; then
+     echo enabling HTTP/1.1 keep-alive
+-    AC_DEFINE(USE_KEEPALIVE)
++    AC_DEFINE(USE_KEEPALIVE, [1], [keepalive])
+   else
+     echo disabling HTTP/1.1 keep-alive
+   fi
+ ],[
+   echo enabling HTTP/1.1 keep-alive
+-  AC_DEFINE(USE_KEEPALIVE)
++  AC_DEFINE(USE_KEEPALIVE, [1], [keepalive])
+ ])
+ 
+ 
+@@ -828,7 +828,7 @@ AC_ARG_ENABLE(wap,
+   if test "$enableval" = "no"
+   then
+     echo disabling WAP gateway parts in bearerbox
+-    AC_DEFINE(NO_WAP)
++    AC_DEFINE(NO_WAP, [1], [no wap])
+   fi
+ ])
+ 
+@@ -837,7 +837,7 @@ AC_ARG_ENABLE(sms,
+   if test "$enableval" = "no"
+   then
+     echo disabling SMS gateway parts in bearerbox
+-    AC_DEFINE(NO_SMS)
++    AC_DEFINE(NO_SMS, [1], [no sms])
+   fi
+ ])
+ 
+@@ -942,7 +942,7 @@ if test "x$ssllib" != "x" && test "x$sslinc" != "x"; then
+         }
+       ], [
+         AC_MSG_RESULT(yes)
+-        AC_DEFINE(HAVE_LIBSSL)
++        AC_DEFINE(HAVE_LIBSSL, [1], [enable SSL])
+         LIBS="$LIBS -lssl"
+         AC_MSG_CHECKING([whether to compile with SSL support])
+         AC_MSG_RESULT(yes)
+@@ -1042,7 +1042,7 @@ else
+     AC_CHECK_LIB(mysqlclient_r, mysql_stmt_init, [],
+ 		AC_CHECK_LIB(mysqlclient, mysql_stmt_init, [], [AC_MSG_ERROR([Unable to find MySQL client libraries version >= 4.1])])
+     )
+-    AC_DEFINE(HAVE_MYSQL)
++    AC_DEFINE(HAVE_MYSQL, [1], [enable mysql])
+     AC_MSG_CHECKING([whether to compile with MySQL support])
+     AC_MSG_RESULT(yes)
+     MYSQL="yes"
+@@ -1074,8 +1074,8 @@ else
+     LIBS="$LIBS `$SDB_CONFIG --libs`"
+     AC_CHECK_LIB(sdb, sdb_init, 
+       [LIBS="$LIBS -lsdb" 
+-       AC_DEFINE(HAVE_SDB)
+-       AC_DEFINE_UNQUOTED(LIBSDB_VERSION, "$sdb_version")
++       AC_DEFINE(HAVE_SDB, [1], [enable libsdb])
++       AC_DEFINE_UNQUOTED(LIBSDB_VERSION, "$sdb_version", [sdb version])
+        SDB="yes"], 
+       [AC_MSG_ERROR([Unable to find libSDB client libraries])]
+     )
+@@ -1100,7 +1100,7 @@ else
+     LIBS="$LIBS -L/usr/local/lib"
+     AC_CHECK_LIB(sqlite, sqlite_open, 
+       [LIBS="$LIBS -lsqlite" 
+-       AC_DEFINE(HAVE_SQLITE)
++       AC_DEFINE(HAVE_SQLITE, [1], [enable sqlite2])
+        SQLITE="yes"], 
+       [AC_MSG_ERROR([Unable to find SQLite2 client libraries])]
+     )
+@@ -1132,7 +1132,7 @@ else
+     LIBS="$LIBS -L/usr/local/lib"
+     AC_CHECK_LIB(sqlite3, sqlite3_open, 
+       [LIBS="$LIBS -lsqlite3" 
+-       AC_DEFINE(HAVE_SQLITE3)
++       AC_DEFINE(HAVE_SQLITE3, [1], [enable sqlite3])
+        SQLITE3="yes"], 
+       [AC_MSG_ERROR([Unable to find SQLite3 client libraries])]
+     )
+@@ -1271,7 +1271,7 @@ else
+     
+     AC_CHECK_HEADERS(libpq-fe.h)
+     AC_CHECK_LIB(pq, PQconnectdb, [])
+-    AC_DEFINE(HAVE_PGSQL)
++    AC_DEFINE(HAVE_PGSQL, [1], [enable postgresql])
+     AC_MSG_CHECKING([whether to compile with PostgreSQL support])
+     AC_MSG_RESULT(yes)
+     PGSQL="yes"
+@@ -1340,7 +1340,7 @@ else
+         AC_MSG_RESULT([$REDIS_CFLAGS])
+     fi
+     AC_CHECK_HEADERS(hiredis/hiredis.h)
+-    AC_DEFINE(HAVE_REDIS)
++    AC_DEFINE(HAVE_REDIS, [1], [enable redis])
+     AC_MSG_CHECKING([whether to compile with Redis support])
+     AC_MSG_RESULT(yes)
+     REDIS="yes"
+@@ -1416,7 +1416,7 @@ else
+         AC_MSG_ERROR([Unable to find cassandra.h, please provide a --with-cassandra-dir=<dir> location])
+     fi
+     AC_CHECK_HEADERS(cassandra.h)
+-    AC_DEFINE(HAVE_CASS)
++    AC_DEFINE(HAVE_CASS, [1], [enable cassandra])
+     AC_MSG_CHECKING([whether to compile with Cassandra support])
+     AC_MSG_RESULT(yes)
+     CASS="yes"
+@@ -1438,7 +1438,7 @@ AC_ARG_WITH(wtls,
+   openssl) 
+     AC_CHECK_LIB(crypto, RSA_new,
+     [ AC_CHECK_HEADERS(openssl/objects.h openssl/rc5.h, 
+-        AC_DEFINE(HAVE_WTLS_OPENSSL),
++        AC_DEFINE(HAVE_WTLS_OPENSSL, [1], [enable WTLS]),
+         AC_MSG_WARN(OpenSSL installation seems to lack RC5 algorithm!)
+       )
+ 	])
+@@ -1504,7 +1504,7 @@ AC_ARG_WITH(gsoap,
+   fi
+ 
+   SOAP_INCLUDE="include soap/Makefile"
+-  AC_DEFINE(HAVE_GSOAP)
++  AC_DEFINE(HAVE_GSOAP, [1], [having gsoap])
+   AC_SUBST(WSDL2H)
+   AC_SUBST(SOAPCPP)
+   AC_SUBST(SOAP_INCLUDE)
+@@ -1516,6 +1516,15 @@ AC_ARG_WITH(gsoap,
+ 
+ dnl Final Output
+ 
++AH_BOTTOM([
++/* If we're using GCC, we can get it to check format function arguments. */
++#ifdef __GNUC__
++    #define PRINTFLIKE(a,b) __attribute__((format(printf, a, b)))
++#else
++    #define PRINTFLIKE(a, b)
++#endif
++])
++
+ AC_CONFIG_SECTION([Generating output files]) 
+ AC_OUTPUT([
+ 	gwlib/gw_uuid_types.h
