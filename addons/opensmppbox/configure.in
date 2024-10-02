@@ -138,7 +138,7 @@ case "$host" in
     LIBS="$LIBS -L/opt/local/lib" 
     ;;
   *-linux-*)
-    CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_BSD_SOURCE"
+    CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_DEFAULT_SOURCE"
     LDFLAGS="$LDFLAGS -rdynamic"
     ;;
   *-*-openbsd* | *-*-freebsd*)

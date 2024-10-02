@@ -88,7 +88,7 @@
 #define OSHURD
 #elif defined(SunOS)
 #elif defined(__CYGWIN__)
-#elif defined(__FreeBSD__) || defined(__APPLE__)
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__APPLE__)
 #define FreeBSD
 #else
 #error Unknown architecture - cannot build start-stop-daemon

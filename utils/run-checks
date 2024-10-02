@@ -22,8 +22,11 @@ done
 
 if test -s check.log
 then
-	echo At least one check failed, see \`check.log\'.
+	echo "At least one check failed, see 'check.log'."
+	echo ',----'
+	cat check.log
+	echo '`----'
 else
-	echo All checks OK.
+	echo "All checks OK."
 	rm -f check.log
 fi

@@ -551,7 +551,7 @@ Octstr *version_report_string(const char *boxname)
     struct utsname u;
 
     uname(&u);
-    return octstr_format(GW_NAME " %s version `%s'.\nBuild `%s', compiler `%s'.\n"
+    return octstr_format(GW_NAME " %s version `%s'.\nCompiler `%s'.\n"
                          "System %s, release %s, version %s, machine %s.\n"
              "Hostname %s, IP %s.\n"
              "Libxml version %s.\n"
@@ -587,10 +587,9 @@ Octstr *version_report_string(const char *boxname)
              "Using %s malloc.\n",
              boxname, GW_VERSION,
 #ifdef __GNUC__ 
-             (__DATE__ " " __TIME__) ,
              __VERSION__,
 #else 
-             "unknown" , "unknown",
+             "unknown",
 #endif 
              u.sysname, u.release, u.version, u.machine,
              octstr_get_cstr(get_official_name()),

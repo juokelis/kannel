@@ -13,17 +13,13 @@
  */
 
 #include "wmlscript/wsint.h"
+#include "wmlscript/wsgram.h"
 
 /* The required yyerror() function.  This is actually not used but to
    report the internal parser errors.  All other errors are reported
    by using the `wserror.h' functions. */
-extern void yyerror(char *msg);
-
-#if WS_DEBUG
-/* Just for debugging purposes. */
-WsCompilerPtr global_compiler = NULL;
-#endif /* WS_DEBUG */
-
+extern void
+ws_yy_error(YYLTYPE *locp, WsCompiler *compiler, char *msg);
 %}
 
 /* The possible semantic values. */
@@ -105,7 +101,9 @@ WsCompilerPtr global_compiler = NULL;
 /* Options for bison. */
 
 /* Generate reentrant parser. */
-%pure-parser
+%define api.pure
+
+%parse-param {WsCompiler *pctx}
 
 /* This grammar has one shift-reduce conflict.  It comes from the
    if-else statement. */
@@ -714,10 +712,10 @@ ArgumentList:
 %%
 
 void
-yyerror(char *msg)
+ws_yy_error(YYLTYPE *locp, WsCompiler *compiler, char *msg)
 {
 #if WS_DEBUG
   fprintf(stderr, "*** %s:%ld: wsc: %s - this msg will be removed ***\n",
-	  global_compiler->input_name, global_compiler->linenum, msg);
+	  compiler->input_name, compiler->linenum, msg);
 #endif /* WS_DEBUG */
 }

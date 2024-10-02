@@ -61,6 +61,8 @@
  * Stipe Tolj <st@tolj.org>, <stolj@kannel.org>
  */
 
+#define _GNU_SOURCE
+
 #include "gwlib/gwlib.h"
 
 

@@ -6,6 +6,7 @@ rpmtemp = /tmp/sqlbox-rpm
 DOCSTARGET=@DOCSTARGET@
 DOCDRAFTS=@DOCDRAFTS@
 RPMPKG=sqlbox-@PACKAGE_VERSION@
+BUILD_DATE=@BUILD_DATE@
 
 pssrcs = $(wildcard doc/*.png)
 ps = $(pssrcs:.png=.ps)  
@@ -14,17 +15,17 @@ figsrcs = $(wildcard doc/*.fig)
 figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 
 .xml.html:
-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
 	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $(XML_DCL) $*.tmp > $@
 	rm -f $*.tmp
 
 .xml.rtf:
-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
 	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) $(XML_DCL) `basename $*`.tmp
 	rm -f $*.tmp
 
 .xml.ps:
-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
 	rm -f $*.tmp
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
@@ -36,7 +37,7 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 	rm -f $*.dvi $*.tex $*.aux 
 
 .xml.pdf:
-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
 	rm -f $*.tmp
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true

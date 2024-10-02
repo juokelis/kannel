@@ -60,13 +60,14 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SHELL = @SHELL@
 VERSION = @VERSION@
+BUILD_DATE = @BUILD_DATE@
 SUFFIX = @SUFFIX@
 LEX = @LEX@
 PERL = @PERL@
 YACC = @YACC@
 
 # -v gives verbose output.
-YFLAGS = -d -p ws_yy_
+YFLAGS = -Wno-yacc -d -p ws_yy_
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = gw-config.h
@@ -160,7 +161,7 @@ man1pages = wmlscript/wmlsc.1 wmlscript/wmlsdasm.1
 man8pages = gw/kannel.8
 
 docsrcs = $(wildcard grep -l '<!DOCTYPE ' doc/*/*.xml)
-docs = $(docsrcs:.xml=.html) $(docsrcs:.xml=.rtf) $(docsrcs:.xml=.ps) $(docsrcs:.xml=.pdf)
+docs = $(docsrcs:.xml=.html) $(docsrcs:.xml=.rtf) $(docsrcs:.xml=.pdf)
 DOCSTARGET=@DOCSTARGET@
 DOCDRAFTS=@DOCDRAFTS@
 
@@ -168,22 +169,22 @@ pssrcs = $(wildcard doc/alligata/*.png doc/wtls/*.png)
 ps = $(pssrcs:.png=.ps)  
 
 figsrcs = $(wildcard doc/userguide/*.fig doc/arch/*.fig)
-figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
+figs = $(figsrcs:.fig=.png)
 
 .SUFFIXES: $(SUFFIXES) .xml .html .rtf .ps .fig .png .y .c .i .o .pdf
 
 .xml.html:
-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
 	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $(XML_DCL) $*.tmp > $@
 	rm -f $*.tmp
 
 .xml.rtf:
-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
 	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) $(XML_DCL) `basename $*`.tmp
 	rm -f $*.tmp
 
 .xml.ps:
-	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
 	rm -f $*.tmp
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
@@ -195,7 +196,7 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 	rm -f $*.dvi $*.tex $*.aux 
 
 .xml.pdf:
-	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
+	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/${BUILD_DATE}/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
 	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
 	rm -f $*.tmp
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
@@ -222,29 +223,38 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 	else :; fi
 
 .c.o:
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 	
 .c.i:
-	$(CC) $(CFLAGS) -o $@ -E $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -E $<
 
-all: $(libs) $(SUBDIRS) progs $(testprogs) $(checkprogs) $(DOCSTARGET) gw-config
+all: $(libs) progs $(testprogs) $(checkprogs) $(DOCSTARGET) gw-config
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir $@; \
+	done
 progs: $(progs)
 tests: $(testprogs)
-docs: figs ps $(docs)
+docs: figs $(docs)
 no-docs:
 figs: $(figs)
 ps: $(ps)
 pp: $(pres)
 
-check: all $(SUBDIRS)
+check: all
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir $@; \
+	done
 	utils/run-checks $(checks)
 
-bench: all $(benchformats) $(SUBDIRS)
+bench: all $(benchformats)
 benchmarks/report.xml: dummy
 	benchmarks/run-benchmarks benchmarks/*.sh
 dummy:
 
-install: all $(SUBDIRS)
+install: all
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir $@; \
+	done
 	$(INSTALL) -d $(DESTDIR)$(bindir)
 	for prog in $(binprogs); do \
 		$(INSTALL) $$prog \
@@ -277,7 +287,7 @@ install: all $(SUBDIRS)
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel
 	$(INSTALL_DATA) lib*.a $(DESTDIR)$(libdir)/kannel
 
-install-test: all $(SUBDIRS)
+install-test: all
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel/test
 	(cd test && find . -type f ! -name "*.c" ! -name "*.o" | grep -v ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(libdir)/kannel/test ; done)
@@ -285,20 +295,20 @@ install-test: all $(SUBDIRS)
                 chmod 755 $(DESTDIR)$(libdir)/kannel/$$prog ; \
         done
 
-install-checks: all $(SUBDIRS)
+install-checks: all
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel/checks
 	(cd checks && find . -type f ! -name "*.c" ! -name "*.o" | grep -v ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(libdir)/kannel/checks ; done)
 	for prog in $(checks) ; do \
                 chmod 755 $(DESTDIR)$(libdir)/kannel/$$prog ; \
         done
 
-install-contrib: all $(SUBDIRS)
+install-contrib: all
 	$(INSTALL) -d $(DESTDIR)$(docdir)/contrib
 	(cd contrib && find . -type d ! -name "CVS" | while read a ; do $(INSTALL) -d $(DESTDIR)$(docdir)/contrib/$$a ; done )
 	(cd contrib && find . -type f ! -name ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(docdir)/contrib/$$a ; done )
 	find $(DESTDIR)$(docdir)/contrib/ -name "*.pl" -o -name "*.sh" -o -name "*.cgi" -o -name "sendsms" -o -name "kannel.monitor" | while read a ; do chmod 755 "$$a" ; done
 
-install-docs: $(SUBDIRS)
+install-docs:
 	$(INSTALL) -d $(DESTDIR)$(docdir)/examples
 	$(INSTALL_DATA) doc/examples/*.conf $(DESTDIR)$(docdir)/examples
 	for docfile in userguide alligata wtls ; do \
@@ -310,14 +320,20 @@ install-docs: $(SUBDIRS)
 		$(INSTALL_DATA) doc/$$docfile/*.png $(DESTDIR)$(docdir)/$$docfile ; \
 	done
 	
-clean: $(SUBDIRS)
+clean:
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir $@; \
+	done
 	find . -name "*.o" -o -name "*.i" -o -name "*.a" | xargs rm -f
 	rm -f core gw-config $(progs) $(testprogs) $(checkprogs)
 	rm -f $(figs) $(ps) $(docs)
 	rm -f $(benchoutputs)
 
-distclean: clean $(SUBDIRS)
-	rm -f Makefile gw-config.h config.cache config.log config.status config.nice .depend gwlib/gw_uuid_types.h
+distclean: clean
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir $@; \
+	done
+	rm -f Makefile soap/Makefile gw-config.h config.cache config.log config.status config.nice .depend gwlib/gw_uuid_types.h
 
 nag:
 	utils/find-long-lines
@@ -376,10 +392,7 @@ gw-config: utils/foobar-config.sh Makefile
 		"@VERSION@" > gw-config
 	chmod 0755 gw-config
 
-$(SUBDIRS):
-	$(MAKE) -C $@ $(MAKECMDGOALS)
-	
 am--refresh:
 	@:
 
-.PHONY: $(SUBDIRS) am--refresh
+.PHONY: am--refresh

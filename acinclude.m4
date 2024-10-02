@@ -139,11 +139,11 @@ AC_TRY_COMPILE([
    )]
 )])
 if test $ac_cv_func_which_gethostname_r -eq 6; then
-  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_6)
+  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_6, [1], [gethostbyname variant 6])
 elif test $ac_cv_func_which_gethostname_r -eq 5; then
-  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_5)
+  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_5, [1], [gethostbyname variant 5])
 elif test $ac_cv_func_which_gethostname_r -eq 3; then
-  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_3)
+  AC_DEFINE(HAVE_FUNC_GETHOSTBYNAME_R_3, [1], [gethostbyname variant 3])
 elif test $ac_cv_func_which_gethostname_r -eq 0; then
   ac_cv_func_which_gethostname_r = no
 fi
