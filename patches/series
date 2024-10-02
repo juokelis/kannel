@@ -18,3 +18,4 @@
 82_verbose-failed-test.patch
 fix-build-with-autoconf-2.7.patch
 83_openssl_fix.patch
+84_mysql_patch.patch
